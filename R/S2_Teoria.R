@@ -28,6 +28,7 @@ library(rjson)
 ## Read JSON file
 json_example <- fromJSON('{"id":1,"name":"leche","price":12.5,"tags":["desnatada","sin lactosa"]}')
 class(json_example)
+json_example
 cat(paste("El producto con Id:",json_example$id, sep = " ","tiene un precio de",json_example$price))
 json_example$tags[1]
 json_example$tags[2]
@@ -45,8 +46,8 @@ json_example$tags[2]
 
 library(rga)
 
-client.id <- "852713182122-1k6rcppuuit6v1cluqo7odplbakb5i5c.apps.googleusercontent.com"
-client.secret <- "DNvhZYMSKKgxNAwnvJzMz4Xc"
+client.id <- ""
+client.secret <- ""
 
 # Instanciamos
 rga.open(instance="ga", client.id=client.id, client.secret=client.secret)
@@ -54,11 +55,12 @@ rga.open(instance="ga", client.id=client.id, client.secret=client.secret)
 # Query A
 date.start <- "2017-01-01"
 date.end <- "2017-05-31"
+ids <- 123
 
-datos.a <- ga$getData(84705203, date.start, date.end, 
+datos.a <- ga$getData(ids, date.start, date.end, 
                       metrics = "ga:hits, ga:sessions, ga:users, ga:pageviews, ga:avgSessionDuration", 
                       dimensions = "ga:date, ga:deviceCategory", 
-                      sort = "", filters = "ga:medium==organic", segment = "",
+                      sort = "", filters = "", segment = "",
                       start = 1)
 
 nrow(datos.a)
@@ -92,4 +94,3 @@ hist(BMI, breaks = 25)
 #### Heatmap
 x <- 1:10; y <- 1:15; z <- matrix(nrow = 10, ncol = 15, sample(1:30, replace = T))
 image(x,y,z)
-
