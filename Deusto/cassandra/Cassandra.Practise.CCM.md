@@ -57,22 +57,97 @@ $ sudo ccm start
 $ sudo ccm node1 cqlsh
 ```
 
-### Exercise 2: Replication
+### Exercise 2: Import dataset and querying tables
+
+Inside CQL console...
+
+**_Download dataset_**
+
+Download dataset from github repository
+
+```bash
+cd ~/data && wget https://github.com/adiazgalache/formacion/raw/master/Deusto/dataset/inv_data.csv
+```
+
+**_Create Keyspace_**
+
+Create keyspace `db_eje2` with Replication Factor 1
+
+```sql
+CREATE KEYSPACE IF NOT EXISTS db_eje2 WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };
+```
+
+**_Create Table_**
+
+Create table `inv_by_medio`:
+
++ Partition key: keyword, medio
++ Clustering column: fecha
+
+```sql
+CREATE TABLE IF NOT EXISTS db_eje2.inv_by_medio (
+keyword text,
+fecha date,
+medio text,
+dessop text,
+tipospot text,
+formato text,
+franja text,
+inv_p decimal,
+PRIMARY KEY ((keyword,medio), fecha)
+) WITH CLUSTERING ORDER BY (fecha DESC);
+```
+
+**_Import csv file_**
+
+```sql
+COPY db_eje2.inv_by_medio (keyword,fecha,medio,dessop,tipospot,formato,franja,inv_p) FROM '/home/deusto/data/inv_data.csv' WITH HEADER=true AND DELIMITER=';';
+```
+
+**_Verify_**
+
+```sql
+select * from db_eje2.inv_by_medio limit 10
+```
+
+**_Query 1_**
+
+Total num rows:
+
+```sql
+select count(*) from db_eje2.inv_by_medio;
+```
+
+_Question_
+
+- What's the reason why there are less rows than in the original file?
+
+**_Query 2_**
+
+Total sum inversion where keyword is Orange and medio Internet
+
+```sql
+select keyword, medio, sum(inv_p) 
+from db_eje2.inv_by_medio 
+where keyword = 'orange' and medio = 'INTERNET';
+```
+
+### Exercise 3: Replication
 
 Inside CQL console...
 
 **_Create Keyspace_**
 
-With Replication Factor 1
+Create keyspace `db_eje3` with Replication Factor 1
 
 ```sql
-CREATE KEYSPACE IF NOT EXISTS DB_TEST WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };
+CREATE KEYSPACE IF NOT EXISTS db_eje3 WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };
 ```
 
-With Replication Factor 3
+Create keyspace `db_eje3_r3` with Replication Factor 3
 
 ```sql
-CREATE KEYSPACE IF NOT EXISTS DB_TEST_RF WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 };
+CREATE KEYSPACE IF NOT EXISTS db_eje3_r3 WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 };
 ```
 
 Show keyspaces
@@ -81,16 +156,16 @@ Show keyspaces
 DESC KEYSPACES;
 ```
 
-**_Create a Column Families_**
+**_Create a Table_**
 
 ```sql
-CREATE TABLE IF NOT EXISTS DB_TEST.SENSOR (
+CREATE TABLE IF NOT EXISTS db_eje3.sensor (
 sensor_id int,
 sensor_name text,
 ts timestamp,
 PRIMARY KEY (sensor_id,ts)) WITH CLUSTERING ORDER BY (ts DESC);
 
-CREATE TABLE IF NOT EXISTS DB_TEST_RF.SENSOR (
+CREATE TABLE IF NOT EXISTS db_eje3_r3.sensor (
 sensor_id int,
 sensor_name text,
 ts timestamp,
@@ -108,15 +183,15 @@ DESC COLUMNFAMILIES;
 _Case 1_
 
 ```sql
-INSERT INTO DB_TEST.SENSOR (sensor_id, sensor_name, ts) VALUES (1,'air polution',dateof(now()));
+INSERT INTO db_eje3.sensor (sensor_id, sensor_name, ts) VALUES (1,'air polution',dateof(now()));
 ```
 
 _Case 2_
 
 ```sql
 BEGIN BATCH
-INSERT INTO DB_TEST_RF.SENSOR (sensor_id, sensor_name, ts) VALUES (1,'air polution',dateof(now()));
-INSERT INTO DB_TEST_RF.SENSOR (sensor_id, sensor_name, ts) VALUES (999,'air flow meter',dateof(now()));
+INSERT INTO db_eje3_r3.sensor (sensor_id, sensor_name, ts) VALUES (1,'air polution',dateof(now()));
+INSERT INTO db_eje3_r3.sensor (sensor_id, sensor_name, ts) VALUES (999,'air flow meter',dateof(now()));
 APPLY BATCH;
 ```
 
@@ -125,12 +200,12 @@ APPLY BATCH;
 _Case 1_
 
 ```sql
-SELECT sensor_id, token(sensor_id) FROM DB_TEST.SENSOR;
+SELECT sensor_id, token(sensor_id) FROM db_eje3.sensor;
 ```
 
 Another way. Return data in JSON format!
 ```sql
-SELECT JSON sensor_id, token(sensor_id) FROM DB_TEST.SENSOR;
+SELECT JSON sensor_id, token(sensor_id) FROM db_eje3.sensor;
 ```
 
 ![CQL Token](img/ccm_1.png)
@@ -140,7 +215,7 @@ SELECT JSON sensor_id, token(sensor_id) FROM DB_TEST.SENSOR;
 _Case 2_
 
 ```
-SELECT sensor_id, token(sensor_id) FROM DB_TEST_RF.SENSOR;
+SELECT sensor_id, token(sensor_id) FROM db_eje3.sensor;
 ```
 
 ![CQL Token](img/ccm_3.png)
@@ -156,18 +231,18 @@ _Solution_
 In other ssh session, launch:
 
 ```bash
-sudo ccm node1 nodetool getendpoints db_test sensor 1;
-sudo ccm node1 nodetool getendpoints db_test_rf sensor 999;
+sudo ccm node1 nodetool getendpoints db_eje3 sensor 1;
+sudo ccm node1 nodetool getendpoints db_eje3_r3 sensor 999;
 ```
 
-### Exercise 3: Fail Over
+### Exercise 4: Fail Over
 
 **_Calcule token_**
 
 We use sensor_id = 2. Discover the associated token:
 
 ```bash
-$ sudo ccm node1 nodetool getendpoints db_test_rf sensor 2;
+$ sudo ccm node1 nodetool getendpoints db_eje3_r3 sensor 2;
 ```
 
 **_Shutdown the node_**
@@ -185,11 +260,11 @@ $ sudo ccm node1 cqlsh
 ```
 
 ```sql
-INSERT INTO DB_TEST_RF.SENSOR (sensor_id, sensor_name, ts) VALUES (2,'speed sensor',dateof(now()));
+INSERT INTO db_eje3_r3.sensor (sensor_id, sensor_name, ts) VALUES (2,'speed sensor',dateof(now()));
 ```
 
 ```sql
-SELECT * FROM DB_TEST_RF.SENSOR;
+SELECT * FROM db_eje3_r3.sensor;
 ```
 
 **_Verify hints table for the fallen node_**
@@ -199,7 +274,6 @@ SELECT * FROM system.hints;
 ```
 
 ![CQL Hints Table](img/ccm_4.png)
-
 
 **_Start the node_**
 
