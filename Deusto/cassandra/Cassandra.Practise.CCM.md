@@ -59,7 +59,11 @@ $ sudo ccm node1 cqlsh
 
 ### Exercise 2: Import dataset and querying tables
 
-Inside CQL console...
+Inside CQL console in node1 ...
+
+```bash
+$ sudo ccm node1 cqlsh
+```
 
 **_Download dataset_**
 
@@ -107,7 +111,7 @@ COPY db_eje2.inv_by_medio (keyword,fecha,medio,dessop,tipospot,formato,franja,in
 **_Verify_**
 
 ```sql
-select * from db_eje2.inv_by_medio limit 10
+select * from db_eje2.inv_by_medio limit 10;
 ```
 
 **_Query 1_**
@@ -132,9 +136,27 @@ from db_eje2.inv_by_medio
 where keyword = 'orange' and medio = 'INTERNET';
 ```
 
+**_Query 3_**
+
+Return all rows that investment is greater than 200.
+
+```sql
+select *
+from db_eje2.inv_by_medio 
+where inv_p > 200;
+```
+
+_Question_
+
+- Can you explain what happens with this query?
+
 ### Exercise 3: Replication
 
-Inside CQL console...
+Inside CQL console in node1 ...
+
+```bash
+$ sudo ccm node1 cqlsh
+```
 
 **_Create Keyspace_**
 
@@ -156,7 +178,7 @@ Show keyspaces
 DESC KEYSPACES;
 ```
 
-**_Create a Table_**
+**_Create tables_**
 
 ```sql
 CREATE TABLE IF NOT EXISTS db_eje3.sensor (
@@ -178,15 +200,19 @@ Show Column Families
 DESC COLUMNFAMILIES;
 ```
 
-**_Insert a row_**
+**_Insert Operation_**
 
 _Case 1_
+
+Insert a record in `db_eje3.sensor` table:
 
 ```sql
 INSERT INTO db_eje3.sensor (sensor_id, sensor_name, ts) VALUES (1,'air polution',dateof(now()));
 ```
 
 _Case 2_
+
+Insert two records in `db_eje3_r3.sensor` table:
 
 ```sql
 BEGIN BATCH
@@ -204,6 +230,7 @@ SELECT sensor_id, token(sensor_id) FROM db_eje3.sensor;
 ```
 
 Another way. Return data in JSON format!
+
 ```sql
 SELECT JSON sensor_id, token(sensor_id) FROM db_eje3.sensor;
 ```
@@ -217,11 +244,10 @@ SELECT JSON sensor_id, token(sensor_id) FROM db_eje3.sensor;
 _Case 2_
 
 ```sql
-SELECT sensor_id, token(sensor_id) FROM db_eje3.sensor;
+SELECT sensor_id, token(sensor_id) FROM db_eje3_r3.sensor;
 ```
 
 ![CQL Token](img/ccm_3.png)
-
 
 _Questions_
 
@@ -240,7 +266,7 @@ sudo ccm node1 nodetool getendpoints db_eje3_r3 sensor 999;
 
 ### Exercise 4: Fail Over
 
-**_Calcule token_**
+**_Calculate token_**
 
 We use sensor_id = 2. Discover the associated token:
 
