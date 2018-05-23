@@ -210,15 +210,18 @@ SELECT JSON sensor_id, token(sensor_id) FROM db_eje3.sensor;
 
 ![CQL Token](img/ccm_1.png)
 
+
 ![CQL Token](img/ccm_2.png)
+
 
 _Case 2_
 
-```
+```sql
 SELECT sensor_id, token(sensor_id) FROM db_eje3.sensor;
 ```
 
 ![CQL Token](img/ccm_3.png)
+
 
 _Questions_
 
