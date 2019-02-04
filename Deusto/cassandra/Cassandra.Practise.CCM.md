@@ -260,8 +260,8 @@ _Solution_
 In other ssh session, launch:
 
 ```bash
-sudo ccm node1 nodetool getendpoints db_eje3 sensor 1;
-sudo ccm node1 nodetool getendpoints db_eje3_r3 sensor 999;
+sudo ccm node1 nodetool getendpoints db_eje3 sensor 1
+sudo ccm node1 nodetool getendpoints db_eje3_r3 sensor 999
 ```
 
 ### Exercise 4: Fail Over
@@ -271,10 +271,10 @@ sudo ccm node1 nodetool getendpoints db_eje3_r3 sensor 999;
 We use sensor_id = 2. Discover the associated token:
 
 ```bash
-$ sudo ccm node1 nodetool getendpoints db_eje3_r3 sensor 2;
+$ sudo ccm node1 nodetool getendpoints db_eje3_r3 sensor 2
 ```
 
-**_Shutdown the node_**
+**_Shutdown the node2_**
 
 ```bash
 $ sudo ccm node2 stop
@@ -283,10 +283,20 @@ $ sudo ccm node2 stop
 **_Insert Row_**
 
 Connect to CQL node1
-
 ```bash
 $ sudo ccm node1 cqlsh
 ```
+
+Insert row in column family db_eje3...
+```sql
+INSERT INTO db_eje3.sensor (sensor_id, sensor_name, ts) VALUES (2,'speed sensor',dateof(now()));
+```
+
+_Question_
+
+- Can you explain what happens with this query?
+
+Insert row in column family db_eje3_r3...
 
 ```sql
 INSERT INTO db_eje3_r3.sensor (sensor_id, sensor_name, ts) VALUES (2,'speed sensor',dateof(now()));
