@@ -212,3 +212,22 @@ db.dropDatabase()
 
 ### Exercise 2: Play with Dataset
 
+
+Download json dataset
+
+```shell
+
+$> cd ~/data/ && wget https://github.com/adiazgalache/formacion/raw/master/Deusto/dataset/inventory-data.json
+```
+
+```shell
+$> mongoimport --db inventory --collection inv --file ~/data/inventory-data.json
+```
+
+_Question_
+
+1. Obtén el **número total** de documentos de la colección.
+2. Obtén los **diferentes** tipos $type disponibles en la colección.
+3. Devuelve **únicamente** campo $item para los documentos cuya cantidad tiene un valor entre 200 y 400.
+4. Obtén la suma de cantidad $quantity para cada tipo $type en la colección.
+5. Devuelve los **dos primeros resultados** de forma ordenada **descendiente**, de la suma de la cantidad $quantity para cada $type único sólo los $item acabados en 1 o 2 (utiliza un wildcard).
